@@ -2,7 +2,7 @@ name: 'TJ Cappelletti'
 description: 'Allows you to add one or more NuGet registries that require authentication safely and securely.'
 author: 'Webstorm Technologies'
 inputs:
-  serializedNuGetRegistries: # change this
+  serializedNuGetRegistries:
     required: true
     description: 'A JSON string of the NuGet registries to add'
 runs:
