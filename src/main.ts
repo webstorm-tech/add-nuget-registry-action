@@ -1,16 +1,27 @@
 import * as core from '@actions/core'
-import {wait} from './wait'
+import * as nugetService from './nuget-service'
+import { NuGetRegistry } from './nuget-registry'
 
 async function run(): Promise<void> {
   try {
-    const ms: string = core.getInput('milliseconds')
-    core.debug(`Waiting ${ms} milliseconds ...`) // debug is only output if you set the secret `ACTIONS_STEP_DEBUG` to true
+    const serializedNuGetRegistries = core.getInput('serializedNuGetRegistries')
 
-    core.debug(new Date().toTimeString())
-    await wait(parseInt(ms, 10))
-    core.debug(new Date().toTimeString())
+    core.debug(`serializedNuGetRegistries: ${serializedNuGetRegistries}`)
 
-    core.setOutput('time', new Date().toTimeString())
+    if (!nugetService.validateNuGetRegistriesJSON(serializedNuGetRegistries)) {
+      core.setFailed('Unable to deserialize the NuGet registries.')
+      return
+    }
+
+    const nugetRegistries: NuGetRegistry[] = nugetService.deserializeNuGetRegistries(serializedNuGetRegistries)
+
+    for (const nugetRegistry of nugetRegistries) {
+      if (await nugetService.nugetRegistryExists(nugetRegistry)) {
+        await nugetService.removeNuGetRegistry(nugetRegistry)
+      }
+
+      nugetService.addNuGetRegistry(nugetRegistry)
+    }
   } catch (error) {
     if (error instanceof Error) core.setFailed(error.message)
   }

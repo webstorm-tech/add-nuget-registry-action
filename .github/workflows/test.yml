@@ -19,6 +19,22 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
+      
       - uses: ./
         with:
-          milliseconds: 1000
+          serializedNuGetRegistries: '[{"name":"unit test","password":"P@$$w0rd","url":"https://nuget.myfeed.local","username":"nuget-user"}]'
+
+      - run: |
+          # Primer, to ensure the welcome and telemetry messages are not shown
+          dotnet --version
+          
+          # List the NuGet sources to file
+          # This makes it easier to grep for the sources
+          dotnet nuget list source >> output
+
+          if grep -q "https://nuget.myfeed.local" output; then
+            echo "Found"
+          else
+            echo "Not Found"
+          	exit 1
+          fi

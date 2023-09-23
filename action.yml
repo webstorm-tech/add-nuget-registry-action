@@ -1,11 +1,10 @@
-name: 'Your name here'
-description: 'Provide a description here'
-author: 'Your name or organization here'
+name: 'TJ Cappelletti'
+description: 'Allows you to add one or more NuGet registries that require authentication safely and securely.'
+author: 'Webstorm Technologies'
 inputs:
-  milliseconds: # change this
+  serializedNuGetRegistries:
     required: true
-    description: 'input description here'
-    default: 'default value if applicable'
+    description: 'A JSON string of the NuGet registries to add'
 runs:
   using: 'node16'
   main: 'dist/index.js'
