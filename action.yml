@@ -1,6 +1,9 @@
 name: 'Add NuGet Registries'
 description: 'Allows you to add one or more NuGet registries that require authentication safely and securely.'
 author: 'Webstorm Technologies'
+branding:
+  icon: 'package'
+  color: 'blue'
 inputs:
   serializedNuGetRegistries:
     required: true

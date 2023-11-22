@@ -1,0 +1,19 @@
+name: Continuous Delivery Workflow
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  gitVersionJob:
+    name: Generate Semantic Version
+    uses: webstorm-tech/workflows/.github/workflows/gitversion-workflow.yml@v5
+
+  tagRepoJob:
+    name: Create GitHub Tag
+    needs: gitVersionJob
+    uses: webstorm-tech/workflows/.github/workflows/github-tag-repo-workflow.yml@v5
+    with:
+      semVer: ${{ needs.gitVersionJob.outputs.semVer }}
+    secrets: inherit
