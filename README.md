@@ -57,7 +57,7 @@ The JSON to add this source via the action would look like this:
   {
     "name":"internal",
     "password":"P@$$w0rd",
-    "url":"",
+    "url":"https://nuget.myfeed.local",
     "username":"nuget-user"
   }
 ]
