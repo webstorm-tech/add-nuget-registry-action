@@ -10,7 +10,7 @@ jobs:
     name: Generate Semantic Version
     uses: webstorm-tech/workflows/.github/workflows/gitversion-workflow.yml@v5
 
-  tagRepoMajorJob:
+  tagRepoJob:
     name: Tag Repo with Versions
     needs: [gitVersionJob]
     runs-on: ubuntu-latest
