@@ -10,8 +10,8 @@ jobs:
     name: Generate Semantic Version
     uses: webstorm-tech/workflows/.github/workflows/gitversion-workflow.yml@v5
 
-  tagRepoJob:
-    name: Tag Repo with Versions
+  tagRepoMajorJob:
+    name: Tag Repo w/ Major
     needs: [gitVersionJob]
     runs-on: ubuntu-latest
     steps:
@@ -20,15 +20,29 @@ jobs:
         with:
           script: |
             // *********************************************** \\
-            // Create SemVer Tag                               \\
+            // Create Major Tag                                \\
             // *********************************************** \\
-            console.log("Creating the v${{ needs.gitVersionJob.outputs.semVer }} tag...")
-            github.rest.git.createRef({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.semVer }}',
-              sha: context.sha
-            })
+            try {
+              console.log("Chekcing if v${{ needs.gitVersionJob.outputs.major }} tag exists...")
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
+              })
+
+              console.log("Deleteing the v${{ needs.gitVersionJob.outputs.major }} tag...")
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
+              })
+            } catch (error) {
+              if (error.status === 404) {
+                console.log("The v${{ needs.gitVersionJob.outputs.major }} tag does not exist...")
+              } else {
+                throw error;
+              }
+            }
 
             console.log("Creating the v${{ needs.gitVersionJob.outputs.major }} tag...")
             github.rest.git.createRef({
@@ -70,28 +84,14 @@ jobs:
               ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.majorMinor }}',
               sha: context.sha
             })
-
+            
             // *********************************************** \\
-            // Create Major Tag                                \\
+            // Create SemVer Tag                               \\
             // *********************************************** \\
-            try {
-              console.log("Chekcing if v${{ needs.gitVersionJob.outputs.major }} tag exists...")
-              await github.rest.git.getRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
-              })
-
-              console.log("Deleteing the v${{ needs.gitVersionJob.outputs.major }} tag...")
-              await github.rest.git.deleteRef({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
-              })
-            } catch (error) {
-              if (error.status === 404) {
-                console.log("The v${{ needs.gitVersionJob.outputs.major }} tag does not exist...")
-              } else {
-                throw error;
-              }
-            }
+            console.log("Creating the v${{ needs.gitVersionJob.outputs.semVer }} tag...")
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.semVer }}',
+              sha: context.sha
+            })
