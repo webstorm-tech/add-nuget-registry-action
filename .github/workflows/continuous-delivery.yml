@@ -11,9 +11,87 @@ jobs:
     uses: webstorm-tech/workflows/.github/workflows/gitversion-workflow.yml@v5
 
   tagRepoJob:
-    name: Create GitHub Tag
-    needs: gitVersionJob
-    uses: webstorm-tech/workflows/.github/workflows/github-tag-repo-workflow.yml@v5
-    with:
-      semVer: ${{ needs.gitVersionJob.outputs.semVer }}
-    secrets: inherit
+    name: Tag Repo with Versions
+    needs: [gitVersionJob]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Create tag
+        uses: actions/github-script@v6
+        with:
+          script: |
+            // *********************************************** \\
+            // Create SemVer Tag                               \\
+            // *********************************************** \\
+            console.log("Creating the v${{ needs.gitVersionJob.outputs.semVer }} tag...")
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.semVer }}',
+              sha: context.sha
+            })
+
+            console.log("Creating the v${{ needs.gitVersionJob.outputs.major }} tag...")
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.major }}',
+              sha: context.sha
+            })
+
+            // *********************************************** \\
+            // Create Major/Minor Tag                          \\
+            // *********************************************** \\
+            try {
+              console.log("Chekcing if v${{ needs.gitVersionJob.outputs.majorMinor }} tag exists...")
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.majorMinor }}'
+              })
+
+              console.log("Deleteing the v${{ needs.gitVersionJob.outputs.majorMinor }} tag...")
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.majorMinor }}'
+              })
+            } catch (error) {
+              if (error.status === 404) {
+                console.log("The v${{ needs.gitVersionJob.outputs.majorMinor }} tag does not exist...")
+              } else {
+                throw error;
+              }
+            }
+
+            console.log("Creating the v${{ needs.gitVersionJob.outputs.majorMinor }} tag...")
+            github.rest.git.createRef({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              ref: 'refs/tags/v${{ needs.gitVersionJob.outputs.majorMinor }}',
+              sha: context.sha
+            })
+
+            // *********************************************** \\
+            // Create Major Tag                                \\
+            // *********************************************** \\
+            try {
+              console.log("Chekcing if v${{ needs.gitVersionJob.outputs.major }} tag exists...")
+              await github.rest.git.getRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
+              })
+
+              console.log("Deleteing the v${{ needs.gitVersionJob.outputs.major }} tag...")
+              await github.rest.git.deleteRef({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                ref: 'tags/v${{ needs.gitVersionJob.outputs.major }}'
+              })
+            } catch (error) {
+              if (error.status === 404) {
+                console.log("The v${{ needs.gitVersionJob.outputs.major }} tag does not exist...")
+              } else {
+                throw error;
+              }
+            }
